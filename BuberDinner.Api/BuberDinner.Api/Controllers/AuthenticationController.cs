@@ -1,6 +1,7 @@
-﻿using BuberDinner.Application.Services.Authentication;
+﻿using BuberDinner.Application.Authentication.Command;
+using BuberDinner.Application.Authentication.Query;
 using BuberDinner.Contracts.Authentication;
-using Microsoft.AspNetCore.Http;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BuberDinner.Api.Controllers
@@ -9,44 +10,34 @@ namespace BuberDinner.Api.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly IAuthenticationService _authenticationService;
+        private readonly ISender _sender;
 
-        public AuthenticationController(IAuthenticationService authenticationService)
+        public AuthenticationController(ISender sender)
         {
-            _authenticationService = authenticationService;
+            _sender = sender;
         }
 
         [HttpPost("register")]
-        public IActionResult Register(RegisterRequest request)
+        public async Task<IActionResult> Register(RegisterRequest request)
         {
-            var authResult = _authenticationService.Register(request.FirstName,
+            var command = new RegisterCommand(request.FirstName,
                 request.LastName,
                 request.Email,
                 request.Password);
 
-            var response = new AuthenticationResponse(
-                    authResult.User.Id,
-                    authResult.User.FirstName,
-                    authResult.User.LastName,
-                    authResult.User.Email,
-                    authResult.Token);
+            var response = await _sender.Send(command);
 
             return Ok(response);
         }
 
         [HttpPost("login")]
-        public IActionResult Login(LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request)
         {
-            var authResult = _authenticationService.Login(
-                request.Email, 
+            var query = new LoginQuery(
+                request.Email,
                 request.Password);
-             
-            var response = new AuthenticationResponse(
-                 authResult.User.Id,
-                 authResult.User.FirstName,
-                 authResult.User.LastName,
-                 authResult.User.Email,
-                 authResult.Token);
+
+            var response = await _sender.Send(query);
 
             return Ok(response);
         }
