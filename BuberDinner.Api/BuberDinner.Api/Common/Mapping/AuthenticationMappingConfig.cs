@@ -1,4 +1,6 @@
-﻿using BuberDinner.Application.Authentication.Common;
+﻿using BuberDinner.Application.Authentication.Command;
+using BuberDinner.Application.Authentication.Common;
+using BuberDinner.Application.Authentication.Query;
 using BuberDinner.Contracts.Authentication;
 using Mapster;
 
@@ -8,6 +10,8 @@ namespace BuberDinner.Api.Common.Mapping
     {
         public void Register(TypeAdapterConfig config)
         {
+            config.NewConfig<RegisterRequest, RegisterCommand>();
+            config.NewConfig<LoginRequest, LoginQuery>();
             config.NewConfig<AuthenticationResult, AuthenticationResponse>()
                 .Map(dest => dest, src => src.User);
         }
